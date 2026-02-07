@@ -124,4 +124,4 @@ def delete_customer(id):
 
     db.session.delete(customer)
     db.session.commit()
-    return jsonify({"message": "Customer deleted"}), 200
+    return jsonify({"message": "Customer deleted successfully"}), 200

@@ -1,33 +1,40 @@
-from flask import Flask, request, jsonify
+# Import Flask
+from flask import Flask
 
+# Import database object
+from config import db
+
+# Import routes blueprint
+from routes import routes
+
+# Create Flask application instance
 app = Flask(__name__)
 
-# In-memory storage for onboarding details
-onboarding_data = []
+# ---------------------------
+# MySQL Configuration (XAMPP)
+# ---------------------------
+# Default XAMPP credentials:
+# user: root
+# password: (empty)
+# host: localhost
+# database: onboarding_db
 
-@app.route('/', methods=['GET'])
-def index():
-    return jsonify({"message": "Welcome to the Customer Onboarding API!"}), 200
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/onboarding_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-@app.route('/onboard', methods=['POST'])
-def onboard_customer():
-    # Get data from request
-    data = request.json
+# Initialize database with Flask app
+db.init_app(app)
 
-    # Validate input
-    required_fields = ['name', 'email', 'phone']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'error': f'Missing {field} field'}), 400
+# Register routes with the app
+app.register_blueprint(routes)
 
-    # Add to onboarding data
-    onboarding_data.append(data)
-    
-    return jsonify({'message': 'Customer onboarded successfully!', 'data': data}), 201
-
-@app.route('/onboarding', methods=['GET'])
-def get_onboarding_data():
-    return jsonify(onboarding_data), 200
-
+# ---------------------------
+# Run Application
+# ---------------------------
 if __name__ == '__main__':
+    # Create tables if they don't exist
+    with app.app_context():
+        db.create_all()
+
+    # Start Flask development server
     app.run(debug=True)

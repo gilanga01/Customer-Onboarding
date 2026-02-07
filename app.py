@@ -1,40 +1,43 @@
-# Import Flask
+# app.py
+# -------------------------
+# Main entry point of the application
+# Initializes Flask, SQLAlchemy, JWT, and registers routes
+# -------------------------
+
 from flask import Flask
-
-# Import database object
 from config import db
-
-# Import routes blueprint
 from routes import routes
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
 
-# Create Flask application instance
+# Create Flask app
 app = Flask(__name__)
 
-# ---------------------------
+# -------------------------
 # MySQL Configuration (XAMPP)
-# ---------------------------
-# Default XAMPP credentials:
-# user: root
-# password: (empty)
-# host: localhost
-# database: onboarding_db
-
+# -------------------------
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/onboarding_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize database with Flask app
-db.init_app(app)
+# -------------------------
+# JWT Configuration
+# -------------------------
+app.config['JWT_SECRET_KEY'] = 'super-secret-key'  # Replace with env variable in production
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
-# Register routes with the app
+# Initialize extensions
+db.init_app(app)
+jwt = JWTManager(app)
+
+# -------------------------
+# Register routes from routes.py
+# -------------------------
 app.register_blueprint(routes)
 
-# ---------------------------
-# Run Application
-# ---------------------------
+# -------------------------
+# Run Flask application
+# -------------------------
 if __name__ == '__main__':
-    # Create tables if they don't exist
     with app.app_context():
-        db.create_all()
-
-    # Start Flask development server
+        db.create_all()  # Create tables if they don't exist
     app.run(debug=True)
